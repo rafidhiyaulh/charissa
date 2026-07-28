@@ -1,6 +1,8 @@
 import concurrent.futures
+import io
 import json
 import os
+import tarfile
 import time
 
 import docker
@@ -8,6 +10,7 @@ import docker
 _IMAGE_NAME = "charissa-sandbox"
 _DOCKERFILE_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "docker")
 _SOCKET_PATH = "/tmp/sandbox.sock"
+_DATA_DIR = "/data"
 
 
 def _docker_client() -> docker.DockerClient:
@@ -58,6 +61,18 @@ class DockerExecutor:
             except concurrent.futures.TimeoutError:
                 return {"stdout": "", "traceback": f"execution timed out after {timeout}s"}
         return json.loads(output.decode())
+
+    def upload_bytes(self, data: bytes, filename: str) -> str:
+        """Copies bytes into the container's /data dir. Returns the in-container path."""
+        self._container.exec_run(["mkdir", "-p", _DATA_DIR])
+        tar_buffer = io.BytesIO()
+        with tarfile.TarFile(fileobj=tar_buffer, mode="w") as tar:
+            info = tarfile.TarInfo(name=filename)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+        tar_buffer.seek(0)
+        self._container.put_archive(_DATA_DIR, tar_buffer)
+        return f"{_DATA_DIR}/{filename}"
 
     def close(self):
         self._container.stop(timeout=1)
