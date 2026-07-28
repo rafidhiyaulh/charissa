@@ -1,9 +1,11 @@
 import contextlib
 import io
 import json
+import os
 import socketserver
 import traceback
 
+_SOCKET_PATH = "/tmp/sandbox.sock"
 _globals = {"__name__": "__main__"}
 
 
@@ -28,5 +30,8 @@ class Handler(socketserver.StreamRequestHandler):
 
 
 if __name__ == "__main__":
-    with socketserver.ThreadingTCPServer(("0.0.0.0", 8765), Handler) as server:
+    if os.path.exists(_SOCKET_PATH):
+        os.remove(_SOCKET_PATH)
+    with socketserver.UnixStreamServer(_SOCKET_PATH, Handler) as server:
+        os.chmod(_SOCKET_PATH, 0o777)
         server.serve_forever()
