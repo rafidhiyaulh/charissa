@@ -23,6 +23,7 @@ Early scaffolding, work in progress.
 2. `cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"`
 3. Run tests: `.venv/bin/pytest -v`
 4. Run the API: `.venv/bin/uvicorn charissa.api.app:app --reload`
+5. In another terminal: `cd frontend && cp .env.example .env.local && npm install && npm run dev`, then open http://localhost:3000
 
 ## API
 
