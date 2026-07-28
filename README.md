@@ -29,3 +29,12 @@ Early scaffolding, work in progress.
 - `POST /sessions` - start a new chat session (spins up an isolated sandbox)
 - `POST /sessions/{id}/chat` - send a message, get back the agent's reply, code, and execution result
 - `DELETE /sessions/{id}` - close a session and tear down its sandbox
+
+## Known gotchas
+
+- Some office/campus wifi blocks outbound port 5432 (Postgres), so `DATABASE_URL`
+  connections (e.g. to Neon) can hang or time out on those networks even though
+  the code is correct. If `scripts/check_db_connection.py` hangs, try a mobile
+  hotspot to confirm it's a network policy issue, not a bug. This won't affect
+  deployed environments (Fly.io, cloud providers) since they don't restrict
+  outbound ports the way some corporate networks do.
