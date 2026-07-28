@@ -19,5 +19,5 @@ Early scaffolding, work in progress.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and fill in `GEMINI_API_KEY`.
+1. Copy `backend/.env.example` to `backend/.env` and fill in `GEMINI_API_KEY`.
 2. (More setup instructions land here as pieces get built.)
