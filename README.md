@@ -20,4 +20,12 @@ Early scaffolding, work in progress.
 ## Setup
 
 1. Copy `backend/.env.example` to `backend/.env` and fill in `GEMINI_API_KEY`.
-2. (More setup instructions land here as pieces get built.)
+2. `cd backend && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"`
+3. Run tests: `.venv/bin/pytest -v`
+4. Run the API: `.venv/bin/uvicorn charissa.api.app:app --reload`
+
+## API
+
+- `POST /sessions` - start a new chat session (spins up an isolated sandbox)
+- `POST /sessions/{id}/chat` - send a message, get back the agent's reply, code, and execution result
+- `DELETE /sessions/{id}` - close a session and tear down its sandbox
