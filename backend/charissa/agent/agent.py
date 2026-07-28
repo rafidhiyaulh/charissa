@@ -52,3 +52,6 @@ class Agent:
             )
             if not execution["traceback"] or attempt == max_attempts - 1:
                 return StepResult(reply=reply, code=code, execution=execution)
+
+    def close(self):
+        self._executor.close()
