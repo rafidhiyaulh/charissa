@@ -1,5 +1,8 @@
+import os
+
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated
 from charissa.api.session import SessionManager
@@ -7,6 +10,14 @@ from charissa.api.session import SessionManager
 load_dotenv()
 
 app = FastAPI(title="charissa")
+
+_allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _session_manager = SessionManager()
 
