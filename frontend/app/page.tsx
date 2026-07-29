@@ -11,6 +11,46 @@ interface ChatMessage {
   traceback?: string | null;
 }
 
+const EXAMPLE_PROMPTS = [
+  "Hitung hasil dari 15 dikali 8 pakai python",
+  "Buatkan data penjualan contoh, lalu tampilkan produk dengan harga tertinggi",
+  "Buat list angka 1 sampai 100, lalu hitung berapa yang habis dibagi 7",
+];
+
+function Avatar({ role }: { role: "user" | "assistant" }) {
+  return (
+    <div
+      className={
+        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium " +
+        (role === "user"
+          ? "bg-blue-600 text-white"
+          : "bg-gradient-to-br from-violet-500 to-blue-500 text-white")
+      }
+    >
+      {role === "user" ? "U" : "C"}
+    </div>
+  );
+}
+
+function OutputBlock({ label, tone, children }: { label: string; tone: "code" | "ok" | "error"; children: string }) {
+  const toneClasses = {
+    code: "text-gray-200",
+    ok: "text-emerald-400",
+    error: "text-red-400",
+  }[tone];
+
+  return (
+    <div className="mt-2 overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
+      <div className="bg-gray-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+        {label}
+      </div>
+      <pre className={`overflow-x-auto bg-gray-900 p-3 text-xs leading-relaxed ${toneClasses}`}>
+        <code>{children}</code>
+      </pre>
+    </div>
+  );
+}
+
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
@@ -27,13 +67,11 @@ export default function Home() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!sessionId || !input.trim() || loading) return;
+  async function submitMessage(userMessage: string) {
+    if (!sessionId || !userMessage.trim() || loading) return;
 
-    const userMessage = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
@@ -60,63 +98,114 @@ export default function Home() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    submitMessage(input.trim());
+  }
+
   return (
-    <div className="flex flex-1 flex-col max-w-3xl w-full mx-auto p-4">
-      <header className="py-4">
-        <h1 className="text-xl font-semibold">charissa</h1>
-        <p className="text-sm text-gray-500">a conversational data engineering assistant</p>
+    <div className="flex h-screen flex-col bg-white dark:bg-black">
+      <header className="border-b border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
+        <div className="mx-auto max-w-3xl px-4 py-4">
+          <h1 className="text-lg font-semibold tracking-tight">charissa</h1>
+          <p className="text-sm text-gray-500">a conversational data engineering assistant</p>
+        </div>
       </header>
 
-      {sessionError && <p className="text-sm text-red-500 mb-4">{sessionError}</p>}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-3xl px-4 py-6">
+          {sessionError && (
+            <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
+              {sessionError}
+            </p>
+          )}
 
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4">
-        {messages.map((message, i) => (
-          <div key={i} className={message.role === "user" ? "text-right" : "text-left"}>
-            <div
-              className={
-                "inline-block max-w-[85%] rounded-lg px-3 py-2 text-sm text-left " +
-                (message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800")
-              }
-            >
-              <p className="whitespace-pre-wrap">{message.content}</p>
-              {message.code && (
-                <pre className="mt-2 overflow-x-auto rounded bg-black/80 text-white p-2 text-xs">
-                  <code>{message.code}</code>
-                </pre>
-              )}
-              {message.stdout && (
-                <pre className="mt-2 overflow-x-auto rounded bg-gray-900 text-green-400 p-2 text-xs">
-                  {message.stdout}
-                </pre>
-              )}
-              {message.traceback && (
-                <pre className="mt-2 overflow-x-auto rounded bg-gray-900 text-red-400 p-2 text-xs">
-                  {message.traceback}
-                </pre>
-              )}
+          {messages.length === 0 && !sessionError && (
+            <div className="flex flex-col items-center gap-4 py-16 text-center">
+              <p className="text-sm text-gray-500">Coba tanyakan sesuatu tentang data-mu, misalnya:</p>
+              <div className="flex flex-col gap-2">
+                {EXAMPLE_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => submitMessage(prompt)}
+                    disabled={!sessionId}
+                    className="rounded-full border border-black/10 px-4 py-2 text-sm text-gray-700 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-gray-300"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
+
+          <div className="space-y-6">
+            {messages.map((message, i) => (
+              <div
+                key={i}
+                className={"flex items-start gap-3 " + (message.role === "user" ? "flex-row-reverse" : "")}
+              >
+                <Avatar role={message.role} />
+                <div
+                  className={
+                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm " +
+                    (message.role === "user"
+                      ? "rounded-tr-sm bg-blue-600 text-white"
+                      : "rounded-tl-sm bg-gray-100 dark:bg-gray-800")
+                  }
+                >
+                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  {message.code && (
+                    <OutputBlock label="Code" tone="code">
+                      {message.code}
+                    </OutputBlock>
+                  )}
+                  {message.stdout && (
+                    <OutputBlock label="Output" tone="ok">
+                      {message.stdout}
+                    </OutputBlock>
+                  )}
+                  {message.traceback && (
+                    <OutputBlock label="Error" tone="error">
+                      {message.traceback}
+                    </OutputBlock>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="flex items-start gap-3">
+                <Avatar role="assistant" />
+                <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" />
+                </div>
+              </div>
+            )}
           </div>
-        ))}
-        {loading && <p className="text-sm text-gray-400">thinking...</p>}
-        <div ref={bottomRef} />
+          <div ref={bottomRef} />
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-2 border-t">
-        <input
-          className="flex-1 rounded border px-3 py-2 text-sm bg-transparent"
-          placeholder="Ask something about your data..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={!sessionId || loading}
-        />
-        <button
-          type="submit"
-          className="rounded bg-blue-600 text-white px-4 py-2 text-sm disabled:opacity-50"
-          disabled={!sessionId || loading || !input.trim()}
-        >
-          Send
-        </button>
-      </form>
+      <div className="border-t border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
+        <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
+          <input
+            className="flex-1 rounded-full border border-black/10 bg-transparent px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10"
+            placeholder="Ask something about your data..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={!sessionId || loading}
+          />
+          <button
+            type="submit"
+            className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+            disabled={!sessionId || loading || !input.trim()}
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
