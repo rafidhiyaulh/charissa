@@ -67,3 +67,8 @@ All three require `X-API-Key` header if `API_KEYS` is set in the environment.
   even though the code/server is fine. If something hangs, try a mobile hotspot
   to confirm it's a network policy issue, not a bug. This doesn't affect the
   deployed environment itself, only debugging from a restrictive network.
+
+## License
+
+All rights reserved. See [LICENSE](LICENSE) — this repository is public for
+viewing as a portfolio piece, not licensed for reuse.
