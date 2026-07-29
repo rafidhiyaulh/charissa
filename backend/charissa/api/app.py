@@ -2,6 +2,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
+import sqlalchemy
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,12 +10,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from charissa.api.auth import require_api_key
 from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated
 from charissa.api.session import SessionManager
+from charissa.audit import AuditLogger
+from charissa.data.postgres_source import _with_psycopg_driver
 
 load_dotenv()
 
 _session_manager = SessionManager()
 _SESSION_TTL_SECONDS = int(os.environ.get("SESSION_TTL_SECONDS", 1800))
 _CLEANUP_INTERVAL_SECONDS = 60
+
+_audit_logger: AuditLogger | None = None
+if os.environ.get("DATABASE_URL"):
+    _audit_engine = sqlalchemy.create_engine(
+        _with_psycopg_driver(os.environ["DATABASE_URL"]),
+        connect_args={"connect_timeout": 3},
+    )
+    _audit_logger = AuditLogger(_audit_engine)
 
 
 async def _cleanup_idle_sessions_loop():
@@ -57,12 +68,24 @@ def chat(session_id: str, request: ChatRequest, sessions: SessionManager = Depen
         raise HTTPException(status_code=404, detail="session not found")
 
     result = agent.ask(request.message)
-    return ChatResponse(
-        reply=result.reply,
-        code=result.code,
-        stdout=result.execution["stdout"] if result.execution else None,
-        traceback=result.execution["traceback"] if result.execution else None,
-    )
+    stdout = result.execution["stdout"] if result.execution else None
+    exec_traceback = result.execution["traceback"] if result.execution else None
+
+    if _audit_logger is not None:
+        try:
+            _audit_logger.record(
+                session_id=session_id,
+                user_message=request.message,
+                code=result.code,
+                stdout=stdout,
+                traceback=exec_traceback,
+            )
+        except Exception as e:
+            # Audit logging is best-effort: a database hiccup shouldn't break
+            # the user-facing chat response.
+            print(f"audit log write failed: {e}")
+
+    return ChatResponse(reply=result.reply, code=result.code, stdout=stdout, traceback=exec_traceback)
 
 
 @app.delete("/sessions/{session_id}", dependencies=[Depends(require_api_key)])
