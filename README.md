@@ -1,21 +1,37 @@
 # charissa
 
-A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL, object storage), and get results back without writing code by hand.
+A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand — live at [charissa-eta.vercel.app](https://charissa-eta.vercel.app).
 
-Built as a learning project to practice designing and shipping a multi-service LLM-backed data platform: sandboxed code execution, multi-source data connectors, and a provider-agnostic LLM layer.
+Built as a learning project to practice designing and shipping a multi-service LLM-backed data platform, with a focus on the problem most companies actually face when adopting AI for data work: how do you let an LLM run generated code against your data without handing that data to a third party.
 
 ## Status
 
-Early scaffolding, work in progress.
+Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
 
-## Stack (planned)
+## Architecture
 
-- LLM: Google Gemini API (provider-agnostic interface, swappable)
-- Backend: FastAPI
-- Frontend: Next.js (Vercel)
-- Execution: sandboxed code runner (container-based)
-- Database: Postgres (Supabase/Neon)
-- Storage: Cloudflare R2 / S3-compatible
+```
+Browser
+  │  HTTPS
+  ▼
+Next.js frontend (Vercel)
+  │  HTTPS
+  ▼
+Caddy (auto TLS) → FastAPI backend (VPS)
+  │                       │
+  ▼                       ▼
+Gemini API          Docker sandbox (network-isolated, one per session)
+                          │
+                          ▼
+                    Postgres / CSV data sources
+```
+
+- **LLM layer**: provider-agnostic interface (`charissa/llm`), currently backed by Gemini.
+- **Execution**: each chat session gets its own Docker container with networking fully disabled — generated code can read the data it's given but can't reach the internet.
+- **Data connectors**: CSV and Postgres. Credentials and queries stay on the trusted host; only the resulting rows are ever handed to the sandbox.
+- **Session lifecycle**: idle sessions are swept and their containers torn down automatically, so the service doesn't accumulate resources under real usage.
+- **Access control**: optional API key gate (`API_KEYS`) — a no-op in local dev, enforceable in a real deployment.
+- **Audit log**: every chat turn (message, generated code, output) is persisted to Postgres, independent of the ephemeral sandbox, so there's a durable trail of what ran against what data.
 
 ## Setup
 
@@ -31,11 +47,12 @@ Early scaffolding, work in progress.
 - `POST /sessions/{id}/chat` - send a message, get back the agent's reply, code, and execution result
 - `DELETE /sessions/{id}` - close a session and tear down its sandbox
 
+All three require `X-API-Key` header if `API_KEYS` is set in the environment.
+
 ## Known gotchas
 
-- Some office/campus wifi blocks outbound port 5432 (Postgres), so `DATABASE_URL`
-  connections (e.g. to Neon) can hang or time out on those networks even though
-  the code is correct. If `scripts/check_db_connection.py` hangs, try a mobile
-  hotspot to confirm it's a network policy issue, not a bug. This won't affect
-  deployed environments (Fly.io, cloud providers) since they don't restrict
-  outbound ports the way some corporate networks do.
+- Some office/campus wifi blocks outbound ports 5432 (Postgres) and 22 (SSH), so
+  `DATABASE_URL` connections or SSH access can hang or time out on those networks
+  even though the code/server is fine. If something hangs, try a mobile hotspot
+  to confirm it's a network policy issue, not a bug. This doesn't affect the
+  deployed environment itself, only debugging from a restrictive network.
