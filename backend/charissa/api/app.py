@@ -1,4 +1,6 @@
+import asyncio
 import os
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
@@ -9,7 +11,25 @@ from charissa.api.session import SessionManager
 
 load_dotenv()
 
-app = FastAPI(title="charissa")
+_session_manager = SessionManager()
+_SESSION_TTL_SECONDS = int(os.environ.get("SESSION_TTL_SECONDS", 1800))
+_CLEANUP_INTERVAL_SECONDS = 60
+
+
+async def _cleanup_idle_sessions_loop():
+    while True:
+        await asyncio.sleep(_CLEANUP_INTERVAL_SECONDS)
+        _session_manager.close_idle(_SESSION_TTL_SECONDS)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    task = asyncio.create_task(_cleanup_idle_sessions_loop())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="charissa", lifespan=lifespan)
 
 _allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
@@ -18,8 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-_session_manager = SessionManager()
 
 
 def get_session_manager() -> SessionManager:
