@@ -4,6 +4,17 @@ A conversational data engineering assistant. Chat with your data, run generated 
 
 Built as a learning project to practice designing and shipping a multi-service LLM-backed data platform, with a focus on the problem most companies actually face when adopting AI for data work: how do you let an LLM run generated code against your data without handing that data to a third party.
 
+## Who this is for
+
+Charissa isn't built for the general public — it's built for organizations that
+want AI-assisted data analysis but can't send their data to a third-party
+service. Financial, healthcare, and government teams need that help but are
+bound by compliance requirements that rule out tools like ChatGPT for anything
+touching sensitive data. Charissa's architecture — self-hosted, a network-isolated
+sandbox, and connectors straight into a private database — exists specifically
+to answer that constraint: the LLM writes and runs code against your data, but
+the data itself never leaves infrastructure you control.
+
 ## Status
 
 Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
