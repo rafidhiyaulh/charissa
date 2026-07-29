@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from charissa.api.auth import require_api_key
 from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated
 from charissa.api.session import SessionManager
 
@@ -44,12 +45,12 @@ def get_session_manager() -> SessionManager:
     return _session_manager
 
 
-@app.post("/sessions", response_model=SessionCreated)
+@app.post("/sessions", response_model=SessionCreated, dependencies=[Depends(require_api_key)])
 def create_session(sessions: SessionManager = Depends(get_session_manager)):
     return SessionCreated(session_id=sessions.create())
 
 
-@app.post("/sessions/{session_id}/chat", response_model=ChatResponse)
+@app.post("/sessions/{session_id}/chat", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
 def chat(session_id: str, request: ChatRequest, sessions: SessionManager = Depends(get_session_manager)):
     agent = sessions.get(session_id)
     if agent is None:
@@ -64,7 +65,7 @@ def chat(session_id: str, request: ChatRequest, sessions: SessionManager = Depen
     )
 
 
-@app.delete("/sessions/{session_id}")
+@app.delete("/sessions/{session_id}", dependencies=[Depends(require_api_key)])
 def close_session(session_id: str, sessions: SessionManager = Depends(get_session_manager)):
     if not sessions.close(session_id):
         raise HTTPException(status_code=404, detail="session not found")
