@@ -130,7 +130,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950 sm:p-6">
-      <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-zinc-900 sm:h-[85vh] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-black/10 sm:shadow-xl sm:dark:border-white/10">
+      <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-zinc-900 sm:h-[calc(100vh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-black/10 sm:shadow-xl sm:dark:border-white/10">
         <header className="border-b border-black/5 px-5 py-4 dark:border-white/10">
           <h1 className="text-lg font-semibold tracking-tight">charissa</h1>
           <p className="text-sm text-zinc-500">a conversational data engineering assistant</p>
