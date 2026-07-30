@@ -7,6 +7,12 @@ export interface ChatResponse {
   traceback: string | null;
 }
 
+export interface UploadResponse {
+  variable: string;
+  stdout: string | null;
+  traceback: string | null;
+}
+
 export async function createSession(): Promise<string> {
   const res = await fetch(`${API_URL}/sessions`, { method: "POST" });
   if (!res.ok) throw new Error("failed to create session");
@@ -21,5 +27,17 @@ export async function sendMessage(sessionId: string, message: string): Promise<C
     body: JSON.stringify({ message }),
   });
   if (!res.ok) throw new Error("failed to send message");
+  return res.json();
+}
+
+export async function uploadCsv(sessionId: string, file: File): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_URL}/sessions/${sessionId}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("failed to upload file");
   return res.json();
 }
