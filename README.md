@@ -1,23 +1,28 @@
 # charissa
 
-A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand — live at [charissa-eta.vercel.app](https://charissa-eta.vercel.app).
+A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand. Live at [trycharissa.dev](https://trycharissa.dev).
 
-Built as a learning project to practice designing and shipping a multi-service LLM-backed data platform, with a focus on the problem most companies actually face when adopting AI for data work: how do you let an LLM run generated code against your data without handing that data to a third party.
+While working as a Data Scientist Apprentice (B2B Operations and Analytics) at PT. Indosat Tbk, I kept running into the same wall: AI could genuinely help with the data in front of me, but that data was confidential, so tools like ChatGPT were never an option. Charissa is my answer to that problem: an LLM-backed data platform built so an AI can write and run code against your data without that data ever leaving infrastructure you control.
 
 ## Who this is for
 
-Charissa isn't built for the general public — it's built for organizations that
+Charissa isn't built for the general public. It's built for organizations that
 want AI-assisted data analysis but can't send their data to a third-party
 service. Financial, healthcare, and government teams need that help but are
 bound by compliance requirements that rule out tools like ChatGPT for anything
-touching sensitive data. Charissa's architecture — self-hosted, a network-isolated
-sandbox, and connectors straight into a private database — exists specifically
+touching sensitive data. Charissa's architecture (self-hosted, a network-isolated
+sandbox, and connectors straight into a private database) exists specifically
 to answer that constraint: the LLM writes and runs code against your data, but
 the data itself never leaves infrastructure you control.
 
 ## Status
 
 Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
+
+| Component | URL |
+|---|---|
+| Frontend (Vercel) | [trycharissa.dev](https://trycharissa.dev) |
+| Backend (VPS, HTTPS via Caddy) | [api.trycharissa.dev](https://api.trycharissa.dev) |
 
 ## Architecture
 
@@ -38,10 +43,10 @@ Gemini API          Docker sandbox (network-isolated, one per session)
 ```
 
 - **LLM layer**: provider-agnostic interface (`charissa/llm`), currently backed by Gemini.
-- **Execution**: each chat session gets its own Docker container with networking fully disabled — generated code can read the data it's given but can't reach the internet.
+- **Execution**: each chat session gets its own Docker container with networking fully disabled, so generated code can read the data it's given but can't reach the internet.
 - **Data connectors**: CSV and Postgres. Credentials and queries stay on the trusted host; only the resulting rows are ever handed to the sandbox.
 - **Session lifecycle**: idle sessions are swept and their containers torn down automatically, so the service doesn't accumulate resources under real usage.
-- **Access control**: optional API key gate (`API_KEYS`) — a no-op in local dev, enforceable in a real deployment.
+- **Access control**: optional API key gate (`API_KEYS`), a no-op in local dev, enforceable in a real deployment.
 - **Rate limiting**: fixed-window limiter per API key (or client IP as a fallback), protecting both the LLM budget and the sandbox from abuse.
 - **Audit log**: every chat turn (message, generated code, output) is persisted to Postgres, independent of the ephemeral sandbox, so there's a durable trail of what ran against what data.
 - **CI**: every push runs the backend test suite (including real Docker-based sandbox tests) and frontend type/lint checks via GitHub Actions.
@@ -76,5 +81,5 @@ environment, and are rate-limited per key (`RATE_LIMIT_MAX_REQUESTS` per
 
 ## License
 
-All rights reserved. See [LICENSE](LICENSE) — this repository is public for
+All rights reserved. See [LICENSE](LICENSE). This repository is public for
 viewing as a portfolio piece, not licensed for reuse.
