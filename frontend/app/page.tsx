@@ -12,9 +12,9 @@ interface ChatMessage {
 }
 
 const EXAMPLE_PROMPTS = [
-  "Hitung hasil dari 15 dikali 8 pakai python",
-  "Buatkan data penjualan contoh, lalu tampilkan produk dengan harga tertinggi",
-  "Buat list angka 1 sampai 100, lalu hitung berapa yang habis dibagi 7",
+  "Buat data transaksi contoh, lalu deteksi transaksi yang nilainya tidak wajar (outlier)",
+  "Buat data pelanggan contoh yang ada duplikat dan nilai kosong, lalu bersihkan dan ringkas hasilnya",
+  "Buat dua kolom data contoh, lalu hitung korelasinya dan jelaskan artinya",
 ];
 
 function Avatar({ role }: { role: "user" | "assistant" }) {
@@ -162,6 +162,9 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-gray-400">
+                atau upload CSV kamu sendiri lewat tombol <span className="font-medium">+ CSV</span> di bawah
+              </p>
             </div>
           )}
 
