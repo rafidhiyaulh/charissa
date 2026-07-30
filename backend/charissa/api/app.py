@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from charissa.api.auth import require_api_key
+from charissa.api.rate_limit import RateLimiter, rate_limit_dependency
 from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated
 from charissa.api.session import SessionManager
 from charissa.audit import AuditLogger
@@ -56,17 +57,32 @@ def get_session_manager() -> SessionManager:
     return _session_manager
 
 
+_rate_limiter = RateLimiter(
+    max_requests=int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", 30)),
+    window_seconds=float(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", 60)),
+)
+enforce_rate_limit = rate_limit_dependency(_rate_limiter)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/sessions", response_model=SessionCreated, dependencies=[Depends(require_api_key)])
+@app.post(
+    "/sessions",
+    response_model=SessionCreated,
+    dependencies=[Depends(require_api_key), Depends(enforce_rate_limit)],
+)
 def create_session(sessions: SessionManager = Depends(get_session_manager)):
     return SessionCreated(session_id=sessions.create())
 
 
-@app.post("/sessions/{session_id}/chat", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
+@app.post(
+    "/sessions/{session_id}/chat",
+    response_model=ChatResponse,
+    dependencies=[Depends(require_api_key), Depends(enforce_rate_limit)],
+)
 def chat(session_id: str, request: ChatRequest, sessions: SessionManager = Depends(get_session_manager)):
     agent = sessions.get(session_id)
     if agent is None:
