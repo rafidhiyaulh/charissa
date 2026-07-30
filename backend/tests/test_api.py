@@ -13,6 +13,9 @@ class FakeAgent:
     def ask(self, message, max_attempts=2):
         return StepResult(reply=f"echo: {message}", code="print(1)", execution={"stdout": "1\n", "traceback": ""})
 
+    def load_csv_bytes(self, data, filename):
+        return {"varname": "uploaded", "stdout": f"loaded {filename}\n", "traceback": ""}
+
     def close(self):
         self.closed = True
 
@@ -69,6 +72,48 @@ def test_close_unknown_session_returns_404():
     client, _ = _client()
     response = client.delete("/sessions/does-not-exist")
     assert response.status_code == 404
+
+
+def test_upload_csv_returns_loaded_variable():
+    client, _ = _client()
+    session_id = client.post("/sessions").json()["session_id"]
+
+    response = client.post(
+        f"/sessions/{session_id}/upload",
+        files={"file": ("sales.csv", b"a,b\n1,2\n", "text/csv")},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["variable"] == "uploaded"
+    assert "sales.csv" in body["stdout"]
+
+
+def test_upload_csv_unknown_session_returns_404():
+    client, _ = _client()
+    response = client.post(
+        "/sessions/does-not-exist/upload",
+        files={"file": ("sales.csv", b"a,b\n1,2\n", "text/csv")},
+    )
+    assert response.status_code == 404
+
+
+def test_upload_csv_too_large_returns_413():
+    from charissa.api import app as app_module
+
+    client, _ = _client()
+    session_id = client.post("/sessions").json()["session_id"]
+
+    original_max = app_module._MAX_UPLOAD_BYTES
+    app_module._MAX_UPLOAD_BYTES = 5
+    try:
+        response = client.post(
+            f"/sessions/{session_id}/upload",
+            files={"file": ("sales.csv", b"a,b\n1,2\n", "text/csv")},
+        )
+        assert response.status_code == 413
+    finally:
+        app_module._MAX_UPLOAD_BYTES = original_max
 
 
 def test_rate_limit_blocks_after_threshold():
