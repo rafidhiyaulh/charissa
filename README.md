@@ -42,7 +42,9 @@ Gemini API          Docker sandbox (network-isolated, one per session)
 - **Data connectors**: CSV and Postgres. Credentials and queries stay on the trusted host; only the resulting rows are ever handed to the sandbox.
 - **Session lifecycle**: idle sessions are swept and their containers torn down automatically, so the service doesn't accumulate resources under real usage.
 - **Access control**: optional API key gate (`API_KEYS`) — a no-op in local dev, enforceable in a real deployment.
+- **Rate limiting**: fixed-window limiter per API key (or client IP as a fallback), protecting both the LLM budget and the sandbox from abuse.
 - **Audit log**: every chat turn (message, generated code, output) is persisted to Postgres, independent of the ephemeral sandbox, so there's a durable trail of what ran against what data.
+- **CI**: every push runs the backend test suite (including real Docker-based sandbox tests) and frontend type/lint checks via GitHub Actions.
 
 ## Setup
 
@@ -54,11 +56,15 @@ Gemini API          Docker sandbox (network-isolated, one per session)
 
 ## API
 
+- `GET /health` - liveness check, no auth required
 - `POST /sessions` - start a new chat session (spins up an isolated sandbox)
 - `POST /sessions/{id}/chat` - send a message, get back the agent's reply, code, and execution result
+- `POST /sessions/{id}/upload` - upload a CSV, loaded into a pandas DataFrame the agent can reference in later turns
 - `DELETE /sessions/{id}` - close a session and tear down its sandbox
 
-All three require `X-API-Key` header if `API_KEYS` is set in the environment.
+All session endpoints require an `X-API-Key` header if `API_KEYS` is set in the
+environment, and are rate-limited per key (`RATE_LIMIT_MAX_REQUESTS` per
+`RATE_LIMIT_WINDOW_SECONDS`).
 
 ## Known gotchas
 
