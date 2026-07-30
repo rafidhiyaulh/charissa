@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createSession, sendMessage } from "@/lib/api";
+import { createSession, sendMessage, uploadCsv } from "@/lib/api";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -58,6 +58,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     createSession()
@@ -101,6 +102,32 @@ export default function Home() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     submitMessage(input.trim());
+  }
+
+  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !sessionId || loading) return;
+
+    setMessages((prev) => [...prev, { role: "user", content: `Uploaded file: ${file.name}` }]);
+    setLoading(true);
+
+    try {
+      const result = await uploadCsv(sessionId, file);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Loaded \`${file.name}\` into a DataFrame called \`${result.variable}\`.`,
+          stdout: result.stdout,
+          traceback: result.traceback,
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Failed to upload the file." }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -190,6 +217,22 @@ export default function Home() {
 
       <div className="border-t border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
         <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileSelected}
+          />
+          <button
+            type="button"
+            title="Upload a CSV file"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!sessionId || loading}
+            className="rounded-full border border-black/10 px-3 py-2.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-gray-300"
+          >
+            + CSV
+          </button>
           <input
             className="flex-1 rounded-full border border-black/10 bg-transparent px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10"
             placeholder="Ask something about your data..."
