@@ -22,6 +22,13 @@ def _client():
     return TestClient(app), manager
 
 
+def test_health_returns_ok():
+    client, _ = _client()
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_create_session_returns_id():
     client, _ = _client()
     response = client.post("/sessions")

@@ -56,6 +56,11 @@ def get_session_manager() -> SessionManager:
     return _session_manager
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/sessions", response_model=SessionCreated, dependencies=[Depends(require_api_key)])
 def create_session(sessions: SessionManager = Depends(get_session_manager)):
     return SessionCreated(session_id=sessions.create())
