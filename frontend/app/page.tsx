@@ -131,9 +131,9 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950 sm:p-6">
       <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-zinc-900 sm:h-[calc(100vh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-black/10 sm:shadow-xl sm:dark:border-white/10">
-        <header className="border-b border-black/5 px-5 py-4 dark:border-white/10">
-          <h1 className="text-lg font-semibold tracking-tight">charissa</h1>
-          <p className="text-sm text-zinc-500">a conversational data engineering assistant</p>
+        <header className="border-b border-black/5 px-5 py-3 dark:border-white/10">
+          <h1 className="text-base font-semibold tracking-tight">charissa</h1>
+          <p className="text-xs text-zinc-500">a conversational data engineering assistant</p>
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-6">
@@ -145,20 +145,20 @@ export default function Home() {
 
           {messages.length === 0 && !sessionError && (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <p className="text-sm text-zinc-500">Coba tanyakan sesuatu tentang data-mu, misalnya:</p>
+              <p className="text-xs text-zinc-500">Coba tanyakan sesuatu tentang data-mu, misalnya:</p>
               <div className="flex flex-col gap-2">
                 {EXAMPLE_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => submitMessage(prompt)}
                     disabled={!sessionId}
-                    className="rounded-full border border-black/10 px-4 py-2 text-sm text-zinc-700 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-zinc-300"
+                    className="rounded-full border border-black/10 px-3.5 py-1.5 text-xs text-zinc-700 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-zinc-300"
                   >
                     {prompt}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className="text-[11px] text-zinc-400">
                 atau upload CSV kamu sendiri lewat tombol <span className="font-medium">+ CSV</span> di bawah
               </p>
             </div>
@@ -227,12 +227,12 @@ export default function Home() {
               title="Upload a CSV file"
               onClick={() => fileInputRef.current?.click()}
               disabled={!sessionId || loading}
-              className="shrink-0 rounded-full border border-black/10 px-3 py-2.5 text-sm text-zinc-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-zinc-300"
+              className="shrink-0 rounded-full border border-black/10 px-3 py-2 text-xs text-zinc-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-zinc-300"
             >
               + CSV
             </button>
             <input
-              className="min-w-0 flex-1 rounded-full border border-black/10 bg-transparent px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10"
+              className="min-w-0 flex-1 rounded-full border border-black/10 bg-transparent px-4 py-2 text-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10"
               placeholder="Ask something about your data..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -240,7 +240,7 @@ export default function Home() {
             />
             <button
               type="submit"
-              className="shrink-0 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+              className="shrink-0 rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
               disabled={!sessionId || loading || !input.trim()}
             >
               Send
