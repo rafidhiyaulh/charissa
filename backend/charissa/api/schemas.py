@@ -14,3 +14,9 @@ class ChatResponse(BaseModel):
     code: str | None
     stdout: str | None
     traceback: str | None
+
+
+class UploadResponse(BaseModel):
+    variable: str
+    stdout: str | None
+    traceback: str | None

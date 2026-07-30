@@ -4,12 +4,12 @@ from contextlib import asynccontextmanager
 
 import sqlalchemy
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from charissa.api.auth import require_api_key
 from charissa.api.rate_limit import RateLimiter, rate_limit_dependency
-from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated
+from charissa.api.schemas import ChatRequest, ChatResponse, SessionCreated, UploadResponse
 from charissa.api.session import SessionManager
 from charissa.audit import AuditLogger
 from charissa.data.postgres_source import _with_psycopg_driver
@@ -63,6 +63,8 @@ _rate_limiter = RateLimiter(
 )
 enforce_rate_limit = rate_limit_dependency(_rate_limiter)
 
+_MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", 10 * 1024 * 1024))
+
 
 @app.get("/health")
 def health():
@@ -107,6 +109,26 @@ def chat(session_id: str, request: ChatRequest, sessions: SessionManager = Depen
             print(f"audit log write failed: {e}")
 
     return ChatResponse(reply=result.reply, code=result.code, stdout=stdout, traceback=exec_traceback)
+
+
+@app.post(
+    "/sessions/{session_id}/upload",
+    response_model=UploadResponse,
+    dependencies=[Depends(require_api_key), Depends(enforce_rate_limit)],
+)
+async def upload_csv(
+    session_id: str, file: UploadFile, sessions: SessionManager = Depends(get_session_manager)
+):
+    agent = sessions.get(session_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="session not found")
+
+    data = await file.read()
+    if len(data) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="file too large")
+
+    result = agent.load_csv_bytes(data, file.filename or "upload.csv")
+    return UploadResponse(variable=result["varname"], stdout=result["stdout"], traceback=result["traceback"])
 
 
 @app.delete("/sessions/{session_id}", dependencies=[Depends(require_api_key)])
