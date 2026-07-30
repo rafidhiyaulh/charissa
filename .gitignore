@@ -19,6 +19,9 @@ build/
 # os
 .DS_Store
 
+# personal, unprocessed source assets
+/picture.png
+
 # editor
 .vscode/
 .idea/
