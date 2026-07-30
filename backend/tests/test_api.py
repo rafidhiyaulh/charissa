@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
-from charissa.api.app import app, get_session_manager
+from charissa.api.app import app, enforce_rate_limit, get_session_manager
+from charissa.api.rate_limit import RateLimiter, rate_limit_dependency
 from charissa.api.session import SessionManager
 from charissa.agent import StepResult
 
@@ -68,3 +69,16 @@ def test_close_unknown_session_returns_404():
     client, _ = _client()
     response = client.delete("/sessions/does-not-exist")
     assert response.status_code == 404
+
+
+def test_rate_limit_blocks_after_threshold():
+    client, _ = _client()
+    app.dependency_overrides[enforce_rate_limit] = rate_limit_dependency(
+        RateLimiter(max_requests=2, window_seconds=60)
+    )
+    try:
+        assert client.post("/sessions").status_code == 200
+        assert client.post("/sessions").status_code == 200
+        assert client.post("/sessions").status_code == 429
+    finally:
+        del app.dependency_overrides[enforce_rate_limit]
