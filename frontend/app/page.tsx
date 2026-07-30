@@ -11,6 +11,12 @@ interface ChatMessage {
   traceback?: string | null;
 }
 
+const CODE_FENCE_PATTERN = /```python\n[\s\S]*?```/;
+
+function stripCodeFence(content: string): string {
+  return content.replace(CODE_FENCE_PATTERN, "").trim();
+}
+
 const EXAMPLE_PROMPTS = [
   "Buat data transaksi contoh, lalu deteksi transaksi yang nilainya tidak wajar (outlier)",
   "Buat data pelanggan contoh yang ada duplikat dan nilai kosong, lalu bersihkan dan ringkas hasilnya",
@@ -179,7 +185,9 @@ export default function Home() {
                       : "rounded-tl-sm bg-zinc-100 dark:bg-zinc-800")
                   }
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {message.code ? stripCodeFence(message.content) : message.content}
+                  </p>
                   {message.code && (
                     <OutputBlock label="Code" tone="code">
                       {message.code}
