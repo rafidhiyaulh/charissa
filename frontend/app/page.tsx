@@ -21,7 +21,7 @@ function Avatar({ role }: { role: "user" | "assistant" }) {
   return (
     <div
       className={
-        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium " +
+        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium shadow-sm " +
         (role === "user"
           ? "bg-blue-600 text-white"
           : "bg-gradient-to-br from-violet-500 to-blue-500 text-white")
@@ -34,17 +34,17 @@ function Avatar({ role }: { role: "user" | "assistant" }) {
 
 function OutputBlock({ label, tone, children }: { label: string; tone: "code" | "ok" | "error"; children: string }) {
   const toneClasses = {
-    code: "text-gray-200",
+    code: "text-zinc-200",
     ok: "text-emerald-400",
     error: "text-red-400",
   }[tone];
 
   return (
-    <div className="mt-2 overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
-      <div className="bg-gray-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+    <div className="mt-2 overflow-hidden rounded-lg border border-black/10 shadow-sm dark:border-white/10">
+      <div className="bg-zinc-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
         {label}
       </div>
-      <pre className={`overflow-x-auto bg-gray-900 p-3 text-xs leading-relaxed ${toneClasses}`}>
+      <pre className={`overflow-x-auto bg-zinc-900 p-3 text-xs leading-relaxed ${toneClasses}`}>
         <code>{children}</code>
       </pre>
     </div>
@@ -131,16 +131,16 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-white dark:bg-black">
-      <header className="border-b border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
-        <div className="mx-auto max-w-3xl px-4 py-4">
+    <div className="flex h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+      <header className="border-b border-black/5 bg-white/80 backdrop-blur dark:border-white/5 dark:bg-zinc-950/80">
+        <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6">
           <h1 className="text-lg font-semibold tracking-tight">charissa</h1>
-          <p className="text-sm text-gray-500">a conversational data engineering assistant</p>
+          <p className="text-sm text-zinc-500">a conversational data engineering assistant</p>
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-4 py-6">
+        <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
           {sessionError && (
             <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
               {sessionError}
@@ -149,20 +149,20 @@ export default function Home() {
 
           {messages.length === 0 && !sessionError && (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <p className="text-sm text-gray-500">Coba tanyakan sesuatu tentang data-mu, misalnya:</p>
+              <p className="text-sm text-zinc-500">Coba tanyakan sesuatu tentang data-mu, misalnya:</p>
               <div className="flex flex-col gap-2">
                 {EXAMPLE_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => submitMessage(prompt)}
                     disabled={!sessionId}
-                    className="rounded-full border border-black/10 px-4 py-2 text-sm text-gray-700 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-gray-300"
+                    className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-zinc-700 shadow-sm transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300"
                   >
                     {prompt}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-zinc-400">
                 atau upload CSV kamu sendiri lewat tombol <span className="font-medium">+ CSV</span> di bawah
               </p>
             </div>
@@ -177,10 +177,10 @@ export default function Home() {
                 <Avatar role={message.role} />
                 <div
                   className={
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm " +
+                    "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm sm:max-w-[80%] " +
                     (message.role === "user"
                       ? "rounded-tr-sm bg-blue-600 text-white"
-                      : "rounded-tl-sm bg-gray-100 dark:bg-gray-800")
+                      : "rounded-tl-sm bg-white dark:bg-zinc-900")
                   }
                 >
                   <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -206,10 +206,10 @@ export default function Home() {
             {loading && (
               <div className="flex items-start gap-3">
                 <Avatar role="assistant" />
-                <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400" />
+                <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-sm dark:bg-zinc-900">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
                 </div>
               </div>
             )}
@@ -218,8 +218,11 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="border-t border-black/10 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
-        <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
+      <div className="border-t border-black/5 bg-white/80 backdrop-blur dark:border-white/5 dark:bg-zinc-950/80">
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex max-w-2xl flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap sm:px-6"
+        >
           <input
             ref={fileInputRef}
             type="file"
@@ -232,12 +235,12 @@ export default function Home() {
             title="Upload a CSV file"
             onClick={() => fileInputRef.current?.click()}
             disabled={!sessionId || loading}
-            className="rounded-full border border-black/10 px-3 py-2.5 text-sm text-gray-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:text-gray-300"
+            className="shrink-0 rounded-full border border-black/10 bg-white px-3 py-2.5 text-sm text-zinc-600 shadow-sm transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300"
           >
             + CSV
           </button>
           <input
-            className="flex-1 rounded-full border border-black/10 bg-transparent px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10"
+            className="min-w-0 flex-1 rounded-full border border-black/10 bg-white px-4 py-2.5 text-sm shadow-sm outline-none transition focus:border-blue-400 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-900"
             placeholder="Ask something about your data..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -245,7 +248,7 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="shrink-0 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
             disabled={!sessionId || loading || !input.trim()}
           >
             Send
