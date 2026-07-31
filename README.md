@@ -91,11 +91,11 @@ environment, and are rate-limited per key (`RATE_LIMIT_MAX_REQUESTS` per
 
 ## Known gotchas
 
-- Some office/campus wifi blocks outbound ports 5432 (Postgres) and 22 (SSH), so
-  `DATABASE_URL` connections or SSH access can hang or time out on those networks
-  even though the code/server is fine. If something hangs, try a mobile hotspot
-  to confirm it's a network policy issue, not a bug. This doesn't affect the
-  deployed environment itself, only debugging from a restrictive network.
+Some office/campus wifi blocks outbound ports 5432 (Postgres) and 22 (SSH), so
+`DATABASE_URL` connections or SSH access can hang or time out on those networks
+even though the code/server is fine. If something hangs, try a mobile hotspot
+to confirm it's a network policy issue, not a bug. This doesn't affect the
+deployed environment itself, only debugging from a restrictive network.
 
 ## License
 
