@@ -21,6 +21,7 @@ build/
 
 # personal, unprocessed source assets
 /picture.png
+/picture1.png
 
 # editor
 .vscode/
