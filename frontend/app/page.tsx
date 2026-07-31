@@ -212,9 +212,9 @@ export default function Home() {
                     </OutputBlock>
                   )}
                   {message.stdout && (
-                    <OutputBlock label="Output" tone="ok" defaultOpen={false}>
+                    <pre className="mt-2 whitespace-pre-wrap font-mono text-sm leading-relaxed">
                       {message.stdout}
-                    </OutputBlock>
+                    </pre>
                   )}
                   {message.traceback && (
                     <OutputBlock label="Error" tone="error">
