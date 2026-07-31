@@ -36,7 +36,17 @@ function Avatar({ role }: { role: "user" | "assistant" }) {
   );
 }
 
-function OutputBlock({ label, tone, children }: { label: string; tone: "code" | "ok" | "error"; children: string }) {
+function OutputBlock({
+  label,
+  tone,
+  defaultOpen = true,
+  children,
+}: {
+  label: string;
+  tone: "code" | "ok" | "error";
+  defaultOpen?: boolean;
+  children: string;
+}) {
   const toneClasses = {
     code: "text-zinc-200",
     ok: "text-emerald-400",
@@ -44,14 +54,17 @@ function OutputBlock({ label, tone, children }: { label: string; tone: "code" | 
   }[tone];
 
   return (
-    <div className="mt-2 overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
-      <div className="bg-zinc-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
+    <details
+      className="mt-2 overflow-hidden rounded-lg border border-black/10 dark:border-white/10"
+      open={defaultOpen}
+    >
+      <summary className="cursor-pointer select-none bg-zinc-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
         {label}
-      </div>
+      </summary>
       <pre className={`overflow-x-auto bg-zinc-900 p-3 text-xs leading-relaxed ${toneClasses}`}>
         <code>{children}</code>
       </pre>
-    </div>
+    </details>
   );
 }
 
@@ -140,6 +153,13 @@ export default function Home() {
         <header className="border-b border-black/5 px-5 py-3 dark:border-white/10">
           <h1 className="text-base font-semibold tracking-tight">charissa</h1>
           <p className="text-xs text-zinc-500">a conversational data engineering assistant</p>
+          <p
+            className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-600/20 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-950 dark:text-emerald-400"
+            title="Kode yang dijalankan di sini berada di sandbox yang jaringannya terisolasi, data tidak pernah dikirim keluar dari sesi ini."
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Sandbox terisolasi, data tidak pernah keluar dari sesi ini
+          </p>
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-6">
@@ -189,7 +209,7 @@ export default function Home() {
                     {message.code ? stripCodeFence(message.content) : message.content}
                   </p>
                   {message.code && (
-                    <OutputBlock label="Code" tone="code">
+                    <OutputBlock label="Code" tone="code" defaultOpen={false}>
                       {message.code}
                     </OutputBlock>
                   )}
