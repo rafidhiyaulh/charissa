@@ -212,7 +212,7 @@ export default function Home() {
                     </OutputBlock>
                   )}
                   {message.stdout && (
-                    <OutputBlock label="Output" tone="ok">
+                    <OutputBlock label="Output" tone="ok" defaultOpen={false}>
                       {message.stdout}
                     </OutputBlock>
                   )}
