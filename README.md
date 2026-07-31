@@ -6,9 +6,9 @@ While working as a Data Scientist Apprentice (B2B Operations and Analytics) at P
 
 ## Who this is for
 
-Charissa isn't built for the general public. It's built for organizations that
-want AI-assisted data analysis but can't send their data to a third-party
-service. Financial, healthcare, and government teams need that help but are
+Charissa isn't built for the general public. **It's built for organizations
+that want AI-assisted data analysis but can't send their data to a
+third-party service.** Financial, healthcare, and government teams need that help but are
 bound by compliance requirements that rule out tools like ChatGPT for anything
 touching sensitive data. Charissa's architecture (self-hosted, a network-isolated
 sandbox, and connectors straight into a private database) exists specifically
