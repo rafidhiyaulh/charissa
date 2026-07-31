@@ -156,7 +156,7 @@ export default function Home() {
             className="text-xs text-zinc-500"
             title="Code executed here runs inside a network-isolated sandbox. Your data is never sent outside this session."
           >
-            a conversational data engineering assistant · isolated sandbox, data never leaves this session
+            a conversational data engineering assistant. isolated sandbox, data never leaves this session
           </p>
         </header>
 
