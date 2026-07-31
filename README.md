@@ -15,6 +15,24 @@ sandbox, and connectors straight into a private database) exists specifically
 to answer that constraint: the LLM writes and runs code against your data, but
 the data itself never leaves infrastructure you control.
 
+## Example: B2B churn analysis
+
+A walkthrough from the point of view of a B2B operations analyst: upload real
+usage data, ask for a summary, flag accounts at risk, then quantify the
+business impact. No step here required writing a line of Python by hand.
+
+**1. Upload a CSV and ask for a quick summary**
+
+![Upload a CSV and get a plain-English summary](docs/images/01-upload-and-summary.png)
+
+**2. Identify accounts with a significant usage drop**
+
+![Identify customers at risk of churning](docs/images/02-churn-detection.png)
+
+**3. Quantify the revenue at risk, code included**
+
+![Quantify potential monthly revenue loss](docs/images/03-revenue-impact.png)
+
 ## Status
 
 Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
