@@ -152,13 +152,11 @@ export default function Home() {
       <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-zinc-900 sm:h-[calc(100vh-3rem)] sm:max-w-2xl sm:rounded-2xl sm:border sm:border-black/10 sm:shadow-xl sm:dark:border-white/10">
         <header className="border-b border-black/5 px-5 py-3 dark:border-white/10">
           <h1 className="text-base font-semibold tracking-tight">charissa</h1>
-          <p className="text-xs text-zinc-500">a conversational data engineering assistant</p>
           <p
-            className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-600/20 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-950 dark:text-emerald-400"
+            className="text-xs text-zinc-500"
             title="Code executed here runs inside a network-isolated sandbox. Your data is never sent outside this session."
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Isolated sandbox, your data never leaves this session
+            a conversational data engineering assistant · isolated sandbox, data never leaves this session
           </p>
         </header>
 
