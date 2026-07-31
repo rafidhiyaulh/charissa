@@ -36,6 +36,13 @@ function Avatar({ role }: { role: "user" | "assistant" }) {
   );
 }
 
+function looksTabular(text: string): boolean {
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) return false;
+  const alignedLines = lines.filter((line) => /\s{2,}/.test(line)).length;
+  return alignedLines / lines.length > 0.5;
+}
+
 function OutputBlock({
   label,
   tone,
@@ -52,6 +59,7 @@ function OutputBlock({
     ok: "text-emerald-400",
     error: "text-red-400",
   }[tone];
+  const wrap = tone !== "code" && !looksTabular(children);
 
   return (
     <details
@@ -61,7 +69,11 @@ function OutputBlock({
       <summary className="cursor-pointer select-none bg-zinc-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
         {label}
       </summary>
-      <pre className={`overflow-x-auto bg-zinc-900 p-3 text-xs leading-relaxed ${toneClasses}`}>
+      <pre
+        className={`overflow-x-auto bg-zinc-900 p-3 text-xs leading-relaxed ${toneClasses} ${
+          wrap ? "whitespace-pre-wrap break-words" : ""
+        }`}
+      >
         <code>{children}</code>
       </pre>
     </details>
