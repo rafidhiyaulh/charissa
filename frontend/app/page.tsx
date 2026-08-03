@@ -166,9 +166,9 @@ export default function Home() {
           <h1 className="text-base font-semibold tracking-tight">charissa</h1>
           <p
             className="text-xs text-zinc-500"
-            title="Code executed here runs inside a network-isolated sandbox. Your data is never sent outside this session."
+            title="Code executed here runs inside a network-isolated sandbox. Your raw dataset never leaves this session; only what the code prints is sent to the model."
           >
-            a conversational data engineering assistant. isolated sandbox, data never leaves this session
+            a conversational data engineering assistant. isolated sandbox, your raw dataset never leaves this session
           </p>
         </header>
 
