@@ -36,6 +36,10 @@ business impact. No step here required writing a line of Python by hand.
 
 ![Quantify potential monthly revenue loss](docs/images/03-revenue-impact.png)
 
+**Fully responsive on mobile**
+
+![Fully responsive on mobile](docs/images/04-mobile-responsive.png)
+
 ## Status
 
 Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
