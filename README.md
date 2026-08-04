@@ -38,7 +38,7 @@ business impact. No step here required writing a line of Python by hand.
 
 **Fully responsive on mobile**
 
-![Fully responsive on mobile](docs/images/04-mobile-responsive.png)
+<img src="docs/images/04-mobile-responsive.png" alt="Fully responsive on mobile" width="320" />
 
 ## Status
 
