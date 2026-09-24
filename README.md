@@ -1,6 +1,6 @@
 # charissa
 
-A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand. Live at [trycharissa.dev](https://trycharissa.dev).
+A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand.
 
 While working as a Data Scientist Apprentice (B2B Operations and Analytics) at PT. Indosat Tbk, I kept running into the same wall: AI could genuinely help with the data in front of me, but that data was confidential, so tools like ChatGPT were never an option. Charissa is my answer to that problem: an LLM-backed data platform built so an AI can write and run code against your data, with the raw dataset staying inside infrastructure you control and only the results the code prints ever reaching the model.
 
@@ -42,12 +42,12 @@ business impact. No step here required writing a line of Python by hand.
 
 ## Status
 
-Deployed end-to-end: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail.
+Built and deployed end-to-end during the apprenticeship described above: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail — all working in production, as shown in the walkthrough above. The backend VPS has since been retired now that the apprenticeship has ended, so the live chat feature is no longer active.
 
 | Component | URL |
 |---|---|
-| Frontend (Vercel) | [trycharissa.dev](https://trycharissa.dev) |
-| Backend (VPS, HTTPS via Caddy) | [api.trycharissa.dev](https://api.trycharissa.dev) |
+| Frontend (Vercel) | [charissa-eta.vercel.app](https://charissa-eta.vercel.app) |
+| Backend (VPS) | retired |
 
 ## Architecture
 
