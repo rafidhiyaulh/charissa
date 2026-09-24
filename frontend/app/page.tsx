@@ -82,7 +82,7 @@ function OutputBlock({
 
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [sessionError, setSessionError] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -92,7 +92,7 @@ export default function Home() {
   useEffect(() => {
     createSession()
       .then(setSessionId)
-      .catch(() => setSessionError("Could not reach the backend. Is it running?"));
+      .catch(() => setSessionError(true));
   }, []);
 
   useEffect(() => {
@@ -174,9 +174,24 @@ export default function Home() {
 
         <div className="flex-1 overflow-y-auto px-5 py-6">
           {sessionError && (
-            <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-              {sessionError}
-            </p>
+            <div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 px-3.5 py-3 text-sm text-zinc-600">
+              <p>
+                This live demo&apos;s backend has been retired — it was built during a data
+                science internship that has since ended.
+              </p>
+              <p className="mt-1">
+                See the{" "}
+                <a
+                  href="https://github.com/rafidhiyaulh/charissa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                >
+                  README walkthrough
+                </a>{" "}
+                for it in action.
+              </p>
+            </div>
           )}
 
           {messages.length === 0 && !sessionError && (
