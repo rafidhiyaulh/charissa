@@ -1,38 +1,26 @@
 # charissa
 
-A conversational data engineering assistant. Chat with your data, run generated code against real data sources (files, SQL), and get results back without writing code by hand.
+Charissa is a friendly data assistant. Chat with it about your data. It writes and runs code for you. It works with files and databases. You get results without writing any code.
 
-While working as a Data Scientist Apprentice (B2B Operations and Analytics) at PT. Indosat Tbk, I kept running into the same wall: AI could genuinely help with the data in front of me, but that data was confidential, so tools like ChatGPT were never an option. Charissa is my answer to that problem: an LLM-backed data platform built so an AI can write and run code against your data, with the raw dataset staying inside infrastructure you control and only the results the code prints ever reaching the model.
+I built Charissa during an apprenticeship. I was a Data Scientist Apprentice at PT. Indosat Tbk, in B2B Operations and Analytics. I kept hitting the same problem there. AI could really help with my data. But that data was confidential. So tools like ChatGPT were not allowed. Charissa is my answer to that. It is an AI data platform you control. Your raw data stays on your own infrastructure. Only the results the code prints reach the AI model.
 
 ## Who this is for
 
-Charissa isn't built for the general public. **It's built for organizations
-that want AI-assisted data analysis but can't send their data to a
-third-party service.** Financial, healthcare, and government teams need that help but are
-bound by compliance requirements that rule out tools like ChatGPT for anything
-touching sensitive data. Charissa's architecture (self-hosted, a network-isolated
-sandbox, and connectors straight into a private database) exists specifically
-to answer that constraint: the raw dataset never leaves infrastructure you
-control, and the sandbox's disabled networking means code can't exfiltrate it
-over the internet. What does reach the LLM is only what the code prints
-(summaries, computed results), since that's how the model sees what happened
-and can keep reasoning or answer in plain English.
+Charissa is not built for everyone. **It is built for teams that want AI help with data, but cannot send that data to a third party.** Banks, hospitals, and government teams know this problem well. Compliance rules often block tools like ChatGPT for sensitive data. Charissa's design answers that problem directly. You host it yourself. Code runs inside an isolated sandbox. That sandbox cannot reach the internet. So your raw data can't leak out over the network. Only what the code prints reaches the AI. This might be a summary or a small result. That is how the AI still sees what happened, and can keep reasoning or reply in plain English.
 
 ## Example: B2B churn analysis
 
-A walkthrough from the point of view of a B2B operations analyst: upload real
-usage data, ask for a summary, flag accounts at risk, then quantify the
-business impact. No step here required writing a line of Python by hand.
+Here is a walkthrough from a B2B analyst's view. Upload real usage data. Ask for a quick summary. Flag accounts that might churn. Then measure the business impact. No step here needs manual Python code.
 
-**1. Upload a CSV and ask for a quick summary**
+**1. Upload a CSV for a quick summary**
 
 ![Upload a CSV and get a plain-English summary](docs/images/01-upload-and-summary.png)
 
-**2. Identify accounts with a significant usage drop**
+**2. Find accounts with a big usage drop**
 
 ![Identify customers at risk of churning](docs/images/02-churn-detection.png)
 
-**3. Quantify the revenue at risk, code included**
+**3. See the revenue at risk, with code included**
 
 ![Quantify potential monthly revenue loss](docs/images/03-revenue-impact.png)
 
@@ -42,7 +30,7 @@ business impact. No step here required writing a line of Python by hand.
 
 ## Status
 
-Built and deployed end-to-end during the apprenticeship described above: Next.js frontend on Vercel, FastAPI backend on a self-managed VPS, sandboxed code execution, multi-source data connectors, and an audit trail — all working in production, as shown in the walkthrough above. The backend VPS has since been retired now that the apprenticeship has ended, so the live chat feature is no longer active.
+I built and deployed this end to end. This happened during the apprenticeship above. The frontend runs on Vercel, built with Next.js. The backend ran on my own VPS, built with FastAPI. It had sandboxed code, several data connectors, and an audit trail. Everything worked live, as shown in the walkthrough above. The apprenticeship has now ended. So I shut down the backend VPS. This means live chat is no longer active.
 
 | Component | URL |
 |---|---|
@@ -67,14 +55,14 @@ Gemini API          Docker sandbox (network-isolated, one per session)
                     Postgres / CSV data sources
 ```
 
-- **LLM layer**: provider-agnostic interface (`charissa/llm`), currently backed by Gemini.
-- **Execution**: each chat session gets its own Docker container with networking fully disabled, so generated code can read the data it's given but can't reach the internet. The raw dataset stays inside that container; only what the code prints (e.g. a summary or a computed result) is sent back to the LLM, since that's how it sees what happened and can keep reasoning.
-- **Data connectors**: CSV and Postgres. Credentials and queries stay on the trusted host; only the resulting rows are ever handed to the sandbox.
-- **Session lifecycle**: idle sessions are swept and their containers torn down automatically, so the service doesn't accumulate resources under real usage.
-- **Access control**: optional API key gate (`API_KEYS`), a no-op in local dev, enforceable in a real deployment.
-- **Rate limiting**: fixed-window limiter per API key (or client IP as a fallback), protecting both the LLM budget and the sandbox from abuse.
-- **Audit log**: every chat turn (message, generated code, output) is persisted to Postgres, independent of the ephemeral sandbox, so there's a durable trail of what ran against what data.
-- **CI**: every push runs the backend test suite (including real Docker-based sandbox tests) and frontend type/lint checks via GitHub Actions.
+- **LLM layer**: works with any AI provider (`charissa/llm`). Right now it uses Gemini.
+- **Execution**: each chat session gets its own Docker container. The container cannot reach the internet. It can only read the data you give it. The raw dataset stays inside that container. Only what the code prints (like a summary or a result) goes back to the LLM. That is how it sees what happened, and can keep reasoning.
+- **Data connectors**: supports CSV files and Postgres. Credentials and queries stay on the trusted host. Only the result rows ever reach the sandbox.
+- **Session lifecycle**: idle sessions get cleaned up automatically. Their containers get torn down too. This keeps resource use low under real usage.
+- **Access control**: an optional API key gate (`API_KEYS`). It does nothing in local dev. It works fully in a real deployment.
+- **Rate limiting**: a fixed-window limit per API key (or client IP as a backup). This protects both the LLM budget and the sandbox from abuse.
+- **Audit log**: every chat turn (message, code, output) is saved to Postgres. This is kept separate from the short-lived sandbox. So there is always a clear trail of what ran, and against what data.
+- **CI**: every push runs the backend test suite (including real Docker sandbox tests) and frontend type and lint checks, through GitHub Actions.
 
 ## Setup
 
@@ -86,25 +74,18 @@ Gemini API          Docker sandbox (network-isolated, one per session)
 
 ## API
 
-- `GET /health` - liveness check, no auth required
-- `POST /sessions` - start a new chat session (spins up an isolated sandbox)
-- `POST /sessions/{id}/chat` - send a message, get back the agent's reply, code, and execution result
-- `POST /sessions/{id}/upload` - upload a CSV, loaded into a pandas DataFrame the agent can reference in later turns
-- `DELETE /sessions/{id}` - close a session and tear down its sandbox
+- `GET /health` - checks if the server is alive. No login needed.
+- `POST /sessions` - starts a new chat session. This also starts an isolated sandbox.
+- `POST /sessions/{id}/chat` - sends a message. Returns the agent's reply, code, and result.
+- `POST /sessions/{id}/upload` - uploads a CSV file. It loads into a dataframe the agent can use later.
+- `DELETE /sessions/{id}` - closes a session. This also shuts down its sandbox.
 
-All session endpoints require an `X-API-Key` header if `API_KEYS` is set in the
-environment, and are rate-limited per key (`RATE_LIMIT_MAX_REQUESTS` per
-`RATE_LIMIT_WINDOW_SECONDS`).
+Session endpoints may need an `X-API-Key` header. This only applies if `API_KEYS` is set in the environment. Each key is also rate-limited (`RATE_LIMIT_MAX_REQUESTS` per `RATE_LIMIT_WINDOW_SECONDS`).
 
 ## Known gotchas
 
-Some office/campus wifi blocks outbound ports 5432 (Postgres) and 22 (SSH), so
-`DATABASE_URL` connections or SSH access can hang or time out on those networks
-even though the code/server is fine. If something hangs, try a mobile hotspot
-to confirm it's a network policy issue, not a bug. This doesn't affect the
-deployed environment itself, only debugging from a restrictive network.
+Some office or campus wifi blocks certain ports. This includes port 5432 for Postgres and port 22 for SSH. So `DATABASE_URL` connections or SSH access can hang or time out on those networks, even though the code and server are fine. If something hangs, try a mobile hotspot instead. This helps confirm it's a network policy issue, not a bug. This doesn't affect the deployed environment itself, only debugging from a restrictive network.
 
 ## License
 
-All rights reserved. See [LICENSE](LICENSE). This repository is public for
-viewing as a portfolio piece, not licensed for reuse.
+All rights reserved. See [LICENSE](LICENSE). This repository is public for viewing as a portfolio piece, not licensed for reuse.

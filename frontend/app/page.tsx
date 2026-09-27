@@ -83,6 +83,8 @@ function OutputBlock({
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [showRetiredModal, setShowRetiredModal] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -92,15 +94,29 @@ export default function Home() {
   useEffect(() => {
     createSession()
       .then(setSessionId)
-      .catch(() => setSessionError(true));
+      .catch(() => setSessionError(true))
+      .finally(() => setCheckingSession(false));
   }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  useEffect(() => {
+    if (!showRetiredModal) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowRetiredModal(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showRetiredModal]);
+
   async function submitMessage(userMessage: string) {
-    if (!sessionId || !userMessage.trim() || loading) return;
+    if (!userMessage.trim() || loading || checkingSession) return;
+    if (sessionError || !sessionId) {
+      setShowRetiredModal(true);
+      return;
+    }
 
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -136,7 +152,11 @@ export default function Home() {
   async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !sessionId || loading) return;
+    if (!file || loading || checkingSession) return;
+    if (sessionError || !sessionId) {
+      setShowRetiredModal(true);
+      return;
+    }
 
     setMessages((prev) => [...prev, { role: "user", content: `Uploaded file: ${file.name}` }]);
     setLoading(true);
@@ -166,19 +186,17 @@ export default function Home() {
           <h1 className="text-base font-semibold tracking-tight">charissa</h1>
           <p
             className="text-xs text-zinc-500"
-            title="Code executed here runs inside a network-isolated sandbox. Your raw dataset never leaves this session; only what the code prints is sent to the model."
+            title="Your code runs in an isolated sandbox. Your raw data never leaves this session. Only printed results go to the AI."
           >
-            a conversational data engineering assistant. isolated sandbox, your raw dataset never leaves this session
+            Chat with your data safely. Your raw data never leaves this session.
           </p>
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-6">
           {sessionError && (
             <div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 px-3.5 py-3 text-sm text-zinc-600">
-              <p>
-                This live demo&apos;s backend has been retired — it was built during a data
-                science internship that has since ended.
-              </p>
+              <p>This live chat is no longer active.</p>
+              <p className="mt-1">It was built for a finished internship.</p>
               <p className="mt-1">
                 See the{" "}
                 <a
@@ -189,14 +207,14 @@ export default function Home() {
                 >
                   README walkthrough
                 </a>{" "}
-                for it in action.
+                instead.
               </p>
             </div>
           )}
 
           {messages.length === 0 && !sessionError && (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <p className="text-xs text-zinc-500">Try asking something about your data, for example:</p>
+              <p className="text-xs text-zinc-500">Try asking something about your data:</p>
               <div className="flex flex-col gap-2">
                 {EXAMPLE_PROMPTS.map((prompt) => (
                   <button
@@ -210,7 +228,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-[11px] text-zinc-400">
-                or upload your own CSV using the <span className="font-medium">+ CSV</span> button below
+                Or upload your own <span className="font-medium">CSV</span> below.
               </p>
             </div>
           )}
@@ -278,8 +296,15 @@ export default function Home() {
             <button
               type="button"
               title="Upload a CSV file"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={!sessionId || loading}
+              onClick={() => {
+                if (checkingSession) return;
+                if (sessionError || !sessionId) {
+                  setShowRetiredModal(true);
+                  return;
+                }
+                fileInputRef.current?.click();
+              }}
+              disabled={checkingSession || loading}
               className="shrink-0 rounded-full border border-black/10 px-3 py-2 text-xs text-zinc-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
             >
               + CSV
@@ -289,18 +314,58 @@ export default function Home() {
               placeholder="Ask something about your data..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={!sessionId || loading}
+              disabled={checkingSession || loading}
             />
             <button
               type="submit"
               className="shrink-0 rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
-              disabled={!sessionId || loading || !input.trim()}
+              disabled={checkingSession || loading || !input.trim()}
             >
               Send
             </button>
           </form>
         </div>
       </div>
+
+      {showRetiredModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+          onClick={() => setShowRetiredModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="retired-modal-title"
+            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="retired-modal-title" className="text-sm font-semibold text-zinc-900">
+              This feature is no longer active
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600">The live backend has been shut down.</p>
+            <p className="mt-1 text-sm text-zinc-600">It was part of a finished internship.</p>
+            <p className="mt-1 text-sm text-zinc-600">
+              See the{" "}
+              <a
+                href="https://github.com/rafidhiyaulh/charissa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+              >
+                README
+              </a>{" "}
+              for a full walkthrough.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowRetiredModal(false)}
+              className="mt-4 w-full rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-zinc-700"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

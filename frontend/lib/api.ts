@@ -13,8 +13,13 @@ export interface UploadResponse {
   traceback: string | null;
 }
 
+const REQUEST_TIMEOUT_MS = 6000;
+
 export async function createSession(): Promise<string> {
-  const res = await fetch(`${API_URL}/sessions`, { method: "POST" });
+  const res = await fetch(`${API_URL}/sessions`, {
+    method: "POST",
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
   if (!res.ok) throw new Error("failed to create session");
   const data = await res.json();
   return data.session_id;
@@ -25,6 +30,7 @@ export async function sendMessage(sessionId: string, message: string): Promise<C
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error("failed to send message");
   return res.json();
@@ -37,6 +43,7 @@ export async function uploadCsv(sessionId: string, file: File): Promise<UploadRe
   const res = await fetch(`${API_URL}/sessions/${sessionId}/upload`, {
     method: "POST",
     body: formData,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error("failed to upload file");
   return res.json();
